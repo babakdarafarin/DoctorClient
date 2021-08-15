@@ -1,0 +1,48 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/shop/src",
+  "monorepo": true,
+  "root": "apps/shop",
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "apps/shop/tsconfig.app.json"
+  },
+  "projects": {
+    "shop": {
+      "type": "application",
+      "root": "apps/shop",
+      "entryFile": "main",
+      "sourceRoot": "apps/shop/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/shop/tsconfig.app.json"
+      }
+    },
+    "client": {
+      "type": "application",
+      "root": "apps/client",
+      "entryFile": "main",
+      "sourceRoot": "apps/client/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/client/tsconfig.app.json"
+      }
+    },
+    "elk": {
+      "type": "application",
+      "root": "apps/elk",
+      "entryFile": "main",
+      "sourceRoot": "apps/elk/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/elk/tsconfig.app.json"
+      }
+    },
+    "doctor": {
+      "type": "application",
+      "root": "apps/doctor",
+      "entryFile": "main",
+      "sourceRoot": "apps/doctor/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/doctor/tsconfig.app.json"
+      }
+    }
+  }
+}

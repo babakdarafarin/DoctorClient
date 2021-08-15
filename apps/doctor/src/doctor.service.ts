@@ -117,8 +117,16 @@ export class DoctorService {
       await this.client.emit('INDEX_CREATE_DOCTOR', {})    
     }
 
+    async BulkDeleteDoctors(ids : number[]){
+      await this.client.emit('BULK_DELETE_DOCTOR', ids)    
+    }
+
     async DeleteIndex(index : string){
       await this.client.emit('INDEX_DELETE', index)    
+    }
+
+    async BulkUpdateIndex(profiles : DoctorDto[]){
+      await this.client.emit('BULK_UPDATE_DOCTOR', profiles)    
     }
 }
 

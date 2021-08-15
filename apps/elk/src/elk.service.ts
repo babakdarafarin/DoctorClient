@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { ProfileDto } from './Dtos/profile.dto';
+import { SearchResult, SearchResultDto } from './Dtos/search-result.dto';
 
 @Injectable()
 export class ELKService {
@@ -17,10 +18,12 @@ export class ELKService {
             index: 'doctors',
             body: {
                 "settings": {
+                    "index.max_ngram_diff" : 17,
                     "analysis": {
                         "filter": {
                             "autocomplete_filter": {                                
-                                "type": "edge_ngram",
+                                //"type": "edge_ngram",
+                                "type": "nGram",
                                 "min_gram": 3,
                                 "max_gram": 20
                             }
@@ -81,26 +84,109 @@ export class ELKService {
 
     async searchIndexPaged(index : string, q: string, from: number | 0, size: number | 100) {
         
-        const { body } = await this.elasticsearchService.search({
+        let results : SearchResultDto = {
+            resultsByNames : {} as SearchResult[],
+            resultsByAbouts : {} as SearchResult[]
+        }
+        
+        let res1 = await this.elasticsearchService.search({
             index: index,
             body: {
               query: {
                 multi_match: {
                     query: q,
-                    fields: ['firstname','lastname', 'about'],
+                    fields: ['firstname','lastname'],
                     //fuzziness: 'AUTO'
                 }
               }
             }
           })
+
+          let resultsByNames = [] as SearchResult[]
+          for(let i of res1.body.hits.hits)
+          {
+              resultsByNames.push({
+                  id : i._source.id,
+                  firstname : i._source.firstname, 
+                  lastname : i._source.lastname,
+                  about : i._source.about,
+                  score : i._score
+                  
+              })
+          }
+
+          results.resultsByNames = resultsByNames
+
+
+          let res2 = await this.elasticsearchService.search({
+            index: index,
+            body: {
+              query: {
+                multi_match: {
+                    query: q,
+                    fields: ['about']
+                    //fuzziness: 'AUTO'
+                }
+              }
+            }
+          })
+
+          let resultsByAbouts = [] as SearchResult[]
+          for(let i of res2.body.hits.hits)
+          {
+            resultsByAbouts.push({
+                  id : i._source.id,
+                  firstname : i._source.firstname, 
+                  lastname : i._source.lastname,
+                  about : i._source.about,
+                  score : i._score
+              })
+          }
+
+          results.resultsByAbouts = resultsByAbouts
           
-          return body.hits.hits     
+          return results
     }
 
     async deleteIndex(index: string){
         return await this.elasticsearchService.indices.delete({index: index})
         .then(res => ({status: 'success', data: res}))
         .catch(err => { throw new Error('Failed to bulk delete data'); });
+    }
+
+    async deleteBulkDeleteDoctors(idsList : number[]){
+        
+        //bulk?
+        idsList.forEach((id) => {
+            this.elasticsearchService.deleteByQuery({
+                index: 'doctors',
+                body: {
+                  query: {
+                    match: {
+                      id: id,
+                    }
+                  }
+                }
+              })
+        })
+
+        //refresh index
+
+        
+    }
+
+    async updateBulkRecords(input : ProfileDto[]){
+
+        //bulk?
+        this.elasticsearchService.update({ 
+            index: "doctors",  
+            id: "1", 
+            body: { 
+                // put the partial document under the `doc` key 
+                doc: input[0]
+            } 
+        }) 
+        
     }
 
 }

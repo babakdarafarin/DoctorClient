@@ -1,4 +1,4 @@
-import { Controller, Get, Delete, Param } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Param } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext, Transport } from '@nestjs/microservices';
 import { ELKService } from './elk.service';
 import { ProfileDto } from './Dtos/profile.dto';
@@ -36,4 +36,18 @@ export class ElkController {
 
     return await this.elkService.searchIndexPaged(searchModel.index, searchModel.q, searchModel.from, searchModel.size)
   }
+
+  @EventPattern('BULK_DELETE_DOCTOR')
+  async deleteRecords(@Payload() idLists: number[]){ //@Ctx() context: RmqContext) {
+
+    return await this.elkService.deleteBulkDeleteDoctors(idLists)
+  }
+
+  @EventPattern('BULK_UPDATE_DOCTOR')
+  async updateRecords(@Payload() profiles: ProfileDto[]){ //@Ctx() context: RmqContext) {
+
+    return await this.elkService.updateBulkRecords(profiles)
+  }
+
+  updateBulkRecords
 }

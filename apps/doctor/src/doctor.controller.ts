@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Post, Put, Get, Delete, Body, Param, Query } from '@nestjs/common';
 import { DoctorService } from './doctor.service';
 import { DoctorDto } from './Dto/doctor.dto';
 
@@ -13,6 +13,20 @@ export class DoctorController {
         @Body('profiles') profiles : DoctorDto[])
         {
             return await this.doctorService.BulkProfileInsert(profiles)
+        }
+
+    @Post('bulkdelete')
+    async bulkDelete(
+    @Body('ids') ids : number[])
+    {
+        return await this.doctorService.BulkDeleteDoctors(ids)
+    }
+
+    @Put('bulkupdate')
+    async bulkUpdate(
+        @Body('profiles') profiles : DoctorDto[])
+        {
+            return await this.doctorService.BulkUpdateIndex(profiles)
         }
 
     @Get('createdoctorindex')

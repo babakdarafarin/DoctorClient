@@ -126,7 +126,7 @@ export class DoctorService {
     }
 
     async BulkUpdateIndex(profiles : DoctorDto[]){
-      await this.client.emit('BULK_UPDATE_DOCTOR', profiles)    
+      return await this.client.emit('BULK_UPDATE_DOCTOR', profiles).toPromise()    
     }
 }
 

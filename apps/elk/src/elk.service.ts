@@ -175,18 +175,30 @@ export class ELKService {
         
     }
 
-    async updateBulkRecords(input : ProfileDto[]){
+    async updateBulkRecords(inputs : ProfileDto[]){
 
-        //bulk?
-        this.elasticsearchService.update({ 
-            index: "doctors",  
-            id: "1", 
-            body: { 
-                // put the partial document under the `doc` key 
-                doc: input[0]
-            } 
-        }) 
-        
+        //move for loop to the painless part
+        for(const profile of inputs){
+            await this.elasticsearchService.updateByQuery(
+                {
+                index: "doctors",  
+                refresh: true,
+                body: {
+                    "query": { 
+                        "match": 
+                        { "id":  profile.id} 
+                    },
+                    "script": {
+                        "lang": 'painless',
+                        "source": "if(params.firstname != null) {ctx._source.firstname = params.firstname;}  if(params.lastname != null) {ctx._source.lastname = params.lastname;} if(params.about != null) {ctx._source.about = params.about;}",
+                        "params": {
+                            "firstname": profile.firstname,
+                            "lastname": profile.lastname,
+                            "about": profile.about
+                          }
+                    },
+                }
+            })
+        }
     }
-
 }

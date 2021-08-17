@@ -9,6 +9,7 @@ import { ProfileDto } from './Dto/profile.dto';
 import { ClientProxy } from '@nestjs/microservices';
 import { SearchDto } from './Dto/search.dto';
 import { promisify } from 'util';
+import { map } from 'rxjs';
 
 @Injectable()
 export class DoctorService {
@@ -69,7 +70,7 @@ export class DoctorService {
             tempELKData.push(tempProfile)
         })
 
-        await this.client.emit('INDEX_DOCTOR', tempELKData)    
+        await this.client.emit('BULK_CREATE_DOCTOR_PROFILES', tempELKData)    
 
         // await this.elkService.createDoctorIndex()
         // await this.elkService.bulkInsertDoctors(tempELKData)
@@ -109,24 +110,26 @@ export class DoctorService {
       //   return res
       // });
 
-      return await this.client.send('INDEX_SEARCH', searchModel).toPromise()
+      return await this.client.send('SEARCH_DATA', searchModel).toPromise()
+      // return await this.client.send('SEARCH_DATA', searchModel)
+      //                   .pipe(map(response => response.data))
       
     }
 
     async CreateDoctorIndex(){
-      await this.client.emit('INDEX_CREATE_DOCTOR', {})    
+      await this.client.emit('CREATE_DOCTOR_INDEX', {})    
     }
 
     async BulkDeleteDoctors(ids : number[]){
-      await this.client.emit('BULK_DELETE_DOCTOR', ids)    
+      await this.client.emit('BULK_DELETE_DOCTOR_PROFILES', ids)    
     }
 
     async DeleteIndex(index : string){
-      await this.client.emit('INDEX_DELETE', index)    
+      await this.client.emit('DELETE_INDEX', index)    
     }
 
     async BulkUpdateIndex(profiles : DoctorDto[]){
-      return await this.client.emit('BULK_UPDATE_DOCTOR', profiles).toPromise()    
+      return await this.client.emit('BULK_UPDATE_DOCTOR_PROFILES', profiles).toPromise()    
     }
 }
 

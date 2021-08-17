@@ -13,7 +13,7 @@ export class ELKService {
             .catch((err) => {throw new Error(err)})
       }
 
-    async createDoctorIndex(){
+    async CreateDoctorIndex(){
         return await this.elasticsearchService.indices.create({
             index: 'doctors',
             body: {
@@ -66,7 +66,7 @@ export class ELKService {
         })
     }
 
-    async bulkInsertDoctors(input : ProfileDto[]) {
+    async BulkCreateDoctorProfiles(input : ProfileDto[]) {
 
         input.forEach((profile) => {
                 this.elasticsearchService.index({
@@ -80,9 +80,36 @@ export class ELKService {
                 }
             })
         })
-      }
+    }
 
-    async searchIndexPaged(index : string, q: string, from: number | 0, size: number | 100) {
+    async BulkUpdateDoctorProfiles(inputs : ProfileDto[]){
+
+        //move for loop to the painless part
+        for(const profile of inputs){
+            await this.elasticsearchService.updateByQuery(
+                {
+                index: "doctors",  
+                refresh: true,
+                body: {
+                    "query": { 
+                        "match": 
+                        { "id":  profile.id} 
+                    },
+                    "script": {
+                        "lang": 'painless',
+                        "source": "if(params.firstname != null) {ctx._source.firstname = params.firstname;}  if(params.lastname != null) {ctx._source.lastname = params.lastname;} if(params.about != null) {ctx._source.about = params.about;}",
+                        "params": {
+                            "firstname": profile.firstname,
+                            "lastname": profile.lastname,
+                            "about": profile.about
+                          }
+                    },
+                }
+            })
+        }
+    }
+
+    async SearchData(index : string, q: string, from: number | 0, size: number | 100) {
         
         let results : SearchResultDto = {
             resultsByNames : {} as SearchResult[],
@@ -148,13 +175,13 @@ export class ELKService {
           return results
     }
 
-    async deleteIndex(index: string){
+    async DeleteIndex(index: string){
         return await this.elasticsearchService.indices.delete({index: index})
         .then(res => ({status: 'success', data: res}))
         .catch(err => { throw new Error('Failed to bulk delete data'); });
     }
 
-    async deleteBulkDeleteDoctors(idsList : number[]){
+    async BulkDeleteDoctorProfiles(idsList : number[]){
         
         //bulk?
         idsList.forEach((id) => {
@@ -171,34 +198,5 @@ export class ELKService {
         })
 
         //refresh index
-
-        
-    }
-
-    async updateBulkRecords(inputs : ProfileDto[]){
-
-        //move for loop to the painless part
-        for(const profile of inputs){
-            await this.elasticsearchService.updateByQuery(
-                {
-                index: "doctors",  
-                refresh: true,
-                body: {
-                    "query": { 
-                        "match": 
-                        { "id":  profile.id} 
-                    },
-                    "script": {
-                        "lang": 'painless',
-                        "source": "if(params.firstname != null) {ctx._source.firstname = params.firstname;}  if(params.lastname != null) {ctx._source.lastname = params.lastname;} if(params.about != null) {ctx._source.about = params.about;}",
-                        "params": {
-                            "firstname": profile.firstname,
-                            "lastname": profile.lastname,
-                            "about": profile.about
-                          }
-                    },
-                }
-            })
-        }
-    }
+    }    
 }

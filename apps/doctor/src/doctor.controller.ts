@@ -1,4 +1,4 @@
-import { Controller, Post, Put, Get, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Post, Put, Get, Delete, Body, Param, Query, Res } from '@nestjs/common';
 import { DoctorService } from './doctor.service';
 import { DoctorDto } from './Dto/doctor.dto';
 
@@ -30,9 +30,10 @@ export class DoctorController {
         }
 
     @Get('createdoctorindex')
-    async createDoctorIndex()
+    async createDoctorIndex(@Res() response)
     {
-      return await this.doctorService.CreateDoctorIndex()
+        await this.doctorService.CreateDoctorIndex()
+        return response.status(200).send('completed!')
     }    
 
     @Get()

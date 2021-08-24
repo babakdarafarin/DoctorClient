@@ -30,10 +30,9 @@ export class DoctorController {
         }
 
     @Get('createdoctorindex')
-    async createDoctorIndex(@Res() response)
+    async createDoctorIndex()
     {
         await this.doctorService.CreateDoctorIndex()
-        return response.status(200).send('completed!')
     }    
 
     @Get()

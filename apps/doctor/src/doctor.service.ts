@@ -117,7 +117,7 @@ export class DoctorService {
     }
 
     async CreateDoctorIndex(){
-      await this.client.emit('CREATE_DOCTOR_INDEX', {})    
+      const alpha = await this.client.emit('CREATE_DOCTOR_INDEX', {})    
     }
 
     async BulkDeleteDoctors(ids : number[]){

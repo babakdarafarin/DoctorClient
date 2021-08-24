@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { ProfileDto } from './Dtos/profile.dto';
 import { SearchResult, SearchResultDto } from './Dtos/search-result.dto';
@@ -13,57 +13,58 @@ export class ELKService {
             .catch((err) => {throw new Error(err)})
       }
 
-    async CreateDoctorIndex(){
-        return await this.elasticsearchService.indices.create({
-            index: 'doctors',
-            body: {
-                "settings": {
-                    "index.max_ngram_diff" : 17,
-                    "analysis": {
-                        "filter": {
-                            "autocomplete_filter": {                                
-                                //"type": "edge_ngram",
-                                "type": "nGram",
-                                "min_gram": 3,
-                                "max_gram": 20
-                            }
-                        },
-                        "analyzer": {
-                            "autocomplete": {
-                                "type": "custom",
-                                "tokenizer": "standard",
-                                "filter":[
-                                    "lowercase", "autocomplete_filter"
-                                ]
-                            }
-                        },
-                    }
-                },
-                "mappings":{
-                    "properties":{
-                        "id": {
-                            "type":"text",
-                            "search_analyzer":"standard"
-                        },
-                        "firstname": {
-                            "type":"text",
-                            "analyzer":"autocomplete", 
-                            "search_analyzer":"standard"
-                        },
-                        "lastname": {
-                        "type":"text",
-                        "analyzer":"autocomplete", 
-                        "search_analyzer":"standard"
-                        },
-                        "about": {
-                            "type":"text",
-                            "analyzer":"autocomplete", 
-                            "search_analyzer":"standard"
+    async CreateDoctorIndex() {
+            const alpha = await this.elasticsearchService.indices.create({
+                index: 'doctors',
+                body: {
+                    "settings": {
+                        "index.max_ngram_diff" : 17,
+                        "analysis": {
+                            "filter": {
+                                "autocomplete_filter": {                                
+                                    "type": "nGram",
+                                    "min_gram": 3,
+                                    "max_gram": 20
+                                }
+                            },
+                            "analyzer": {
+                                "autocomplete": {
+                                    "type": "custom",
+                                    "tokenizer": "standard",
+                                    "filter":[
+                                        "lowercase", "autocomplete_filter"
+                                    ]
+                                }
+                            },
                         }
-                   }
+                    },
+                    "mappings":{
+                        "properties":{
+                            "id": {
+                                "type":"text",
+                                "search_analyzer":"standard"
+                            },
+                            "firstname": {
+                                "type":"text",
+                                "analyzer":"autocomplete", 
+                                "search_analyzer":"standard"
+                            },
+                            "lastname": {
+                            "type":"text",
+                            "analyzer":"autocomplete", 
+                            "search_analyzer":"standard"
+                            },
+                            "about": {
+                                "type":"text",
+                                "analyzer":"autocomplete", 
+                                "search_analyzer":"standard"
+                            }
+                    }
+                    }
                 }
-            }
-        })
+            })
+
+            console.log(typeof alpha)
     }
 
     async BulkCreateDoctorProfiles(input : ProfileDto[]) {
